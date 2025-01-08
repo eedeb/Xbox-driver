@@ -57,6 +57,14 @@ def close_function():
     pyautogui.hotkey('ctrl', 'w')
 def enter_key():
     pyautogui.press('enter')
+def backspace():
+    pyautogui.press('backspace')
+def right_arrow():
+    pyautogui.press('right')
+def left_arrow():
+    pyautogui.press('left')
+def spacebar():
+    pyautogui.press('space')
 def text_speak():
     try:
         with sr.Microphone() as source:
@@ -103,14 +111,14 @@ def process_gamepad():
                     # Handle D-pad horizontal movement
                     if event.code == "ABS_HAT0X":
                         if event.state == -1:  # D-pad left
-                            print("D-pad left")
+                            backspace()
                         elif event.state == 1:  # D-pad right
                             enter_key()
 
                     # Handle D-pad vertical movement
                     elif event.code == "ABS_HAT0Y":
                         if event.state == -1:  # D-pad up
-                            print("D-pad up pressed!")
+                            spacebar()
                         elif event.state == 1:  # D-pad down
                             custom_function()
                 # Detect button presses
@@ -145,6 +153,14 @@ def process_gamepad():
                             is_right_joystick_pressed = True
                         elif event.state == 0:  # Right joystick release (R3)
                             is_right_joystick_pressed = False
+
+                    if event.code == "BTN_TL":  # Left bumper (LB / L1)
+                        if event.state == 1:  # Button pressed
+                            left_arrow()
+
+                    elif event.code == "BTN_TR":  # Right bumper (RB / R1)
+                        if event.state == 1:  # Button pressed
+                            right_arrow()
 
     except KeyboardInterrupt:
         print("\nExiting...")
