@@ -4,6 +4,7 @@ import threading
 import time
 import speech_recognition as sr
 recognizer = sr.Recognizer()
+pyautogui.FAILSAFE = False
 
 
 # Sensitivity factors for controlling mouse speed
@@ -25,14 +26,11 @@ is_right_joystick_pressed = False  # Flag to track if the right joystick is pres
 # Custom functions for button actions
 def left_click():
     pyautogui.click()
-    print("Left click triggered!")
 
 def right_click():
     pyautogui.rightClick()
-    print("Right click triggered!")
 
 def trigger_action():
-    print(f"Trigger action: LT={left_trigger}, RT={right_trigger}")
     if right_trigger > 250:
         pyautogui.hotkey('ctrl', 'tab')
     elif left_trigger > 250:
@@ -44,12 +42,10 @@ def left_joystick():
         # Increase sensitivity to 100 when joystick is pressed
         SENSITIVITY_X = 100
         SENSITIVITY_Y = 100
-        print(f"Sensitivity set to 100 while L3 is pressed")
     else:
         # Revert sensitivity to 20 when joystick is released
         SENSITIVITY_X = 20
         SENSITIVITY_Y = 20
-        print(f"Sensitivity set to 20")
 
 def custom_function():
     pyautogui.hotkey('win', 'r')
