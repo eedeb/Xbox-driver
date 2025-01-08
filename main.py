@@ -49,8 +49,9 @@ def left_joystick():
         print(f"Sensitivity set to 20")
 
 def custom_function():
-    print("Custom button function executed!")
-
+    pyautogui.hotkey('win', 'r')
+def close_function():
+    pyautogui.hotkey('ctrl', 'w')
 # Function to process gamepad input
 def process_gamepad():
     global x_movement, y_movement, left_trigger, right_trigger, is_left_joystick_pressed, right_joystick_y, is_right_joystick_pressed
@@ -91,9 +92,12 @@ def process_gamepad():
                         if event.state == 1:  # Button pressed
                             right_click()
 
-                    elif event.code == "BTN_WEST":  # X button
+                    elif event.code == "BTN_NORTH":  # X button
                         if event.state == 1:  # Button pressed
                             custom_function()
+                    elif event.code == "BTN_WEST":  # X button
+                        if event.state == 1:  # Button pressed
+                            close_function()
 
                     # Detect L3 press and release
                     if event.code == "BTN_THUMBL":
