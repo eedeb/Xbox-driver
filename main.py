@@ -2,10 +2,13 @@ import pyautogui
 from inputs import get_gamepad
 import threading
 import time
+import speech_recognition as sr
+recognizer = sr.Recognizer()
+
 
 # Sensitivity factors for controlling mouse speed
-SENSITIVITY_X = 20
-SENSITIVITY_Y = 20
+SENSITIVITY_X = 30
+SENSITIVITY_Y = 30
 SCROLL_SENSITIVITY = 20  # Default sensitivity for scrolling
 FAST_SCROLL_SENSITIVITY = 100  # Sensitivity for faster scrolling when R3 is pressed
 DEAD_ZONE = 5000
@@ -52,6 +55,21 @@ def custom_function():
     pyautogui.hotkey('win', 'r')
 def close_function():
     pyautogui.hotkey('ctrl', 'w')
+def enter_key():
+    pyautogui.press('enter')
+def text_speak():
+    try:
+        with sr.Microphone() as source:
+            print("Adjusting for ambient noise, please wait...")
+            recognizer.adjust_for_ambient_noise(source)
+            print("Listening...")
+            audio = recognizer.listen(source)
+            var = recognizer.recognize_google(audio)
+    except sr.UnknownValueError:
+        print("Sorry, I could not understand the audio.")
+    except sr.RequestError as e:
+        print(f"Request error from Google Speech Recognition service: {e}")
+    pyautogui.write(var)
 # Function to process gamepad input
 def process_gamepad():
     global x_movement, y_movement, left_trigger, right_trigger, is_left_joystick_pressed, right_joystick_y, is_right_joystick_pressed
@@ -81,7 +99,20 @@ def process_gamepad():
 
                     elif event.code == "ABS_RY":  # Right joystick Y-axis (up-down movement)
                         right_joystick_y = event.state
+                    # D-pad
+                    # Handle D-pad horizontal movement
+                    if event.code == "ABS_HAT0X":
+                        if event.state == -1:  # D-pad left
+                            print("D-pad left")
+                        elif event.state == 1:  # D-pad right
+                            enter_key()
 
+                    # Handle D-pad vertical movement
+                    elif event.code == "ABS_HAT0Y":
+                        if event.state == -1:  # D-pad up
+                            print("D-pad up pressed!")
+                        elif event.state == 1:  # D-pad down
+                            custom_function()
                 # Detect button presses
                 elif event.ev_type == "Key":
                     if event.code == "BTN_SOUTH":  # A button
@@ -94,7 +125,7 @@ def process_gamepad():
 
                     elif event.code == "BTN_NORTH":  # X button
                         if event.state == 1:  # Button pressed
-                            custom_function()
+                            text_speak()
                     elif event.code == "BTN_WEST":  # X button
                         if event.state == 1:  # Button pressed
                             close_function()
@@ -129,10 +160,9 @@ def move_mouse():
         dy = (y_movement / 32768) * SENSITIVITY_Y
 
         # Move the mouse gradually
-        pyautogui.moveRel(dx, dy, duration=0.01)
+        pyautogui.moveRel(dx, dy, duration=0.1)
 
         # Add a small delay for smoother movement
-        time.sleep(0.01)
 
 # Function to scroll the page based on right joystick Y-axis input
 def scroll_page():
@@ -167,4 +197,4 @@ scroll_page_thread.start()
 
 # Keep the program running
 while True:
-    time.sleep(1)
+    time.sleep(10)
