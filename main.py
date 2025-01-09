@@ -22,7 +22,7 @@ right_trigger = 0
 is_left_joystick_pressed = False  # Flag to track if the left joystick is pressed
 right_joystick_y = 0  # To store vertical movement of the right joystick
 is_right_joystick_pressed = False  # Flag to track if the right joystick is pressed
-
+y_button = False
 # Custom functions for button actions
 def left_click():
     pyautogui.click()
@@ -74,9 +74,36 @@ def text_speak():
     except sr.RequestError as e:
         print(f"Request error from Google Speech Recognition service: {e}")
     pyautogui.write(var)
+
+
+
+def handle_text_speak():
+    global y_button
+    audio = None
+    with sr.Microphone() as source:
+        try:
+            print("Listening... Hold down the Y button to speak.")
+            while y_button:  # Keep listening while button is held
+                audio = recognizer.listen(source, timeout=1, phrase_time_limit=5)
+            if audio:  # Process the audio after releasing the button
+                text = recognizer.recognize_google(audio)
+                print(f"Recognized text: {text}")
+                pyautogui.write(text)
+            else:
+                print('Nothing recognized')
+        except sr.UnknownValueError:
+            print("Sorry, I could not understand the audio.")
+        except sr.RequestError as e:
+            print(f"Request error from Google Speech Recognition service: {e}")
+        except Exception as e:
+            print(f"Error during speech recognition: {e}")
+
+
+
+
 # Function to process gamepad input
 def process_gamepad():
-    global x_movement, y_movement, left_trigger, right_trigger, is_left_joystick_pressed, right_joystick_y, is_right_joystick_pressed
+    global x_movement, y_movement, left_trigger, right_trigger, is_left_joystick_pressed, right_joystick_y, is_right_joystick_pressed, y_button
     print("Listening for controller input... Press Ctrl+C to quit.")
     try:
         while True:
@@ -121,15 +148,24 @@ def process_gamepad():
                 elif event.ev_type == "Key":
                     if event.code == "BTN_SOUTH":  # A button
                         if event.state == 1:  # Button pressed
-                            left_click()
+                            pyautogui.mouseDown()
+                        elif event.state== 0:
+                            pyautogui.mouseUp()
 
                     elif event.code == "BTN_EAST":  # B button
                         if event.state == 1:  # Button pressed
-                            right_click()
+                            pyautogui.mouseDown(button='right')
+                        elif event.state== 0:
+                            pyautogui.mouseUp(button='right')
 
-                    elif event.code == "BTN_NORTH":  # X button
+                    elif event.code == "BTN_NORTH":  # Y button
                         if event.state == 1:  # Button pressed
-                            text_speak()
+                            #text_speak()
+                            y_button = True
+                            text_speak_thread = threading.Thread(target=handle_text_speak)
+                            text_speak_thread.start()
+                        elif event.state == 0:
+                            y_button=False
                     elif event.code == "BTN_WEST":  # X button
                         if event.state == 1:  # Button pressed
                             close_function()
@@ -168,8 +204,8 @@ def move_mouse():
     global x_movement, y_movement
     while True:
         # Scale joystick input and apply sensitivity
-        dx = (x_movement / 32768) * SENSITIVITY_X
-        dy = (y_movement / 32768) * SENSITIVITY_Y
+        dx = (x_movement / 32768) * (SENSITIVITY_X * abs(x_movement / 32768))
+        dy = (y_movement / 32768) * (SENSITIVITY_Y * abs(y_movement / 32768))
 
         # Move the mouse gradually
         pyautogui.moveRel(dx, dy, duration=0.1)
